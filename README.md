@@ -1,7 +1,8 @@
-# Smart queue 
-Smart execution queue with fine tuning of rates and limits of queue execution
+# Smart request balancer 
+Smart request queue with fine tuning of rates and limits of queue execution
 ## Build status
 [![Build Status](https://travis-ci.org/energizer91/smart-request-balancer.svg?branch=master)](https://travis-ci.org/energizer91/smart-request-balancer)
+[![Coverage Status](https://coveralls.io/repos/github/energizer91/smart-request-balancer/badge.svg?branch=master)](https://coveralls.io/github/energizer91/smart-request-balancer?branch=master)
 ## Installation
 ### NPM
 ```bash
@@ -129,7 +130,7 @@ entrypoint for making requests with this library
 
 You should use `retry` function in request in order to set retry for this request.
 You can easily determine it by HTTP 429 code. Sometimes servers also return `retry_after` param which you can pass
-to `retry` function and set retryInterval for this request. You don't need to do anything special. Our promise will only be resolved
+to `retry` function and set retry interval for this request. You don't need to do anything special. Our promise will only be resolved
 when server will respond us correctly.
 
 ### Overall overheat
