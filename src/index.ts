@@ -9,9 +9,9 @@ type Rule = {
   priority: number
 };
 
-export type RetryFunction = (delay: number) => void;
-export type QueueRequest = (RetryFunction: RetryFunction) => Promise<any>;
-export type Callback = (error: Error | null, data?: any) => void;
+type RetryFunction = (delay: number) => void;
+type QueueRequest = (RetryFunction: RetryFunction) => Promise<any>;
+type Callback = (error: Error | null, data?: any) => void;
 
 type QueueItemData = {
   id: string,
@@ -33,7 +33,7 @@ type ShiftItemStructure = {
   item: QueueItemData
 };
 
-export type UserConfig = {
+type UserConfig = {
   rules?: {
     [key: string]: Rule
   },
@@ -342,6 +342,4 @@ class SmartQueue {
   }
 }
 
-module.exports = SmartQueue;
-
-export default SmartQueue;
+export = SmartQueue;
