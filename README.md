@@ -112,7 +112,7 @@ queue.request(requestHandler, key, rule)
   .catch(error => console.error(error))    // our request error (excluding 429)
 ```
 
-### Proirities
+### Priorities
 Each rule has it's own priority. This was made to allow more urgent request execute faster than less urgent.
 Imagine you have two rules: for individual messages and for broadcasting. Broadcasting can be a hard routine and
 you should not totally wait for it to finish in order to send private message to somebody. In that case you should put
@@ -138,7 +138,7 @@ Sometimes you need to set overall overheat of queue (e.g. Telegram API has restr
 For that purpose you can configure `overall` rule in config and set `ignoreOverallOverheat` to false.
 
 ### Debug
-In order to debug queue you can use enviroment variable `DEBUG=smart-request-balancer`.
+In order to debug queue you can use environment variable `DEBUG=smart-request-balancer`.
 
 ### Other usages
 You can use this queue not only for API requests. This library can also be used for any routines which should be
