@@ -47,6 +47,8 @@ queue.request((retry) => axios(config)
     if (error.response.status === 429) { // We've got 429 - too many requests
       return retry(error.response.data.parameters.retry_after) // usually 300 seconds
     }
+    
+    throw error; // throw error further
   }), user_id, 'telegramIndividual')
   .then(response => console.log(response)) // our actual response
   .catch(error => console.error(error));
@@ -99,7 +101,7 @@ queue.request((retry) => axios(config)
       return retry(error.response.data.parameters.retry_after) // usually 300 seconds
     }
     
-    throw error;
+    throw error; // throw error further
   }), key, rule);
 ```
 
@@ -142,4 +144,4 @@ In order to debug queue you can use environment variable `DEBUG=smart-request-ba
 
 ### Other usages
 You can use this queue not only for API requests. This library can also be used for any routines which should be
-queued and executed sequentally based on rules, grouping, priority and ability to retry.
+queued and executed sequentially based on rules, grouping, priority and ability to retry.
