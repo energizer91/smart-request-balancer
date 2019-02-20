@@ -1,3 +1,7 @@
+# IDE
+.idea
+.vscode
+
 # Logs
 logs
 *.log
@@ -59,3 +63,6 @@ typings/
 
 # next.js build output
 .next
+
+# dist folder
+dist

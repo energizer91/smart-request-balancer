@@ -1,0 +1,46 @@
+{
+  "name": "smart-request-balancer",
+  "version": "1.0.0",
+  "description": "Smart request balancer with fine tuning of rates and limits of queue execution",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha --reporter spec test/**/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/energizer91/smart-request-balancer.git"
+  },
+  "keywords": [
+    "request",
+    "rate",
+    "limit",
+    "balancer",
+    "queue",
+    "request",
+    "typescript"
+  ],
+  "author": "energizer91",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/energizer91/smart-request-balancer/issues"
+  },
+  "homepage": "https://github.com/energizer91/smart-request-balancer#readme",
+  "devDependencies": {
+    "@types/debug": "^4.1.1",
+    "@types/uuid": "^3.4.4",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.0",
+    "sinon": "^7.2.4",
+    "sinon-chai": "^3.3.0",
+    "typescript": "^3.3.3"
+  },
+  "dependencies": {
+    "debug": "^4.1.1",
+    "uuid": "^3.3.2"
+  }
+}
