@@ -1,5 +1,7 @@
-# Smart queue
+# Smart queue 
 Smart execution queue with fine tuning of rates and limits of queue execution
+## Build status
+[![Build Status](https://travis-ci.org/energizer91/smart-request-balancer.svg?branch=master)](https://travis-ci.org/energizer91/smart-request-balancer)
 ## Installation
 ### NPM
 ```bash
