@@ -80,7 +80,7 @@ const queue = new Queue({
     limit: 1
   },
   retryTime: 300,              // Default retry time. Can be configured in retry fn
-  ignoreOverallOverheat: true // Should we ignore overheat of queue itself
+  ignoreOverallOverheat: true  // Should we ignore overheat of queue itself
 })
 ```
 

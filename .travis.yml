@@ -3,6 +3,6 @@ node_js :
   - stable
 install:
   - npm install
-  - npm start build
+  - npm run build
 script:
   - npm test
