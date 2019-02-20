@@ -21,7 +21,6 @@
     "limit",
     "balancer",
     "queue",
-    "request",
     "typescript"
   ],
   "author": "energizer91",
