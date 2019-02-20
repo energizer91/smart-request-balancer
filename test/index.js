@@ -111,4 +111,49 @@ describe('Smart queue', () => {
     expect(callback).to.have.been.calledOnce;
     expect(callback).to.have.been.calledWith(1);
   });
+
+  it('should return error', async () => {
+    const queue = new SmartQueue(params);
+    const request = sinon.stub().throws();
+    const callback = sinon.spy();
+
+    await queue.request(request).catch(callback);
+
+    expect(queue.totalLength).to.eq(0);
+    expect(callback).to.have.been.calledOnce;
+    expect(callback).to.have.been.calledWith(sinon.match.instanceOf(Error));
+  });
+
+  it('should hit overall heat limit', async () => {
+    const overallRule = {
+      rate: 1,
+      limit: 1
+    };
+    const queue = new SmartQueue(Object.assign({}, params, {
+      ignoreOverallOverheat: false,
+      overall: overallRule
+    }));
+    const rateLimit = Math.round(overallRule.rate / overallRule.limit * 1000);
+    const callback = sinon.spy();
+
+    await queue.request(() => 1).then(callback);
+    const firstEnd = Date.now();
+    await queue.request(() => 2).then(callback);
+    const secondEnd = Date.now();
+
+    expect(queue.totalLength).to.eq(0);
+    expect(secondEnd - firstEnd).is.gte(rateLimit);
+  });
+
+  it('should create new rule if nothing found', async () => {
+    const queue = new SmartQueue(params);
+    const callback = sinon.spy();
+
+    await queue.request(() => 1, 1, 'lol').then(callback);
+
+    expect(queue.totalLength).to.eq(0);
+    expect(callback).to.have.been.calledOnce;
+    expect(callback).to.have.been.calledWith(1);
+    expect(queue.params.rules).to.have.property('lol');
+  })
 });

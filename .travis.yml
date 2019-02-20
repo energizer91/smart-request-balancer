@@ -3,6 +3,9 @@ node_js :
   - stable
 install:
   - npm install
-  - npm run build
 script:
-  - npm test
+  - npm run build
+  - npm run cover
+
+# Send coverage data to Coveralls
+after_script: "cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js"

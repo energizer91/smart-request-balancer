@@ -1,5 +1,5 @@
-import uuid from 'uuid/v1';
 import debugFactory from 'debug';
+import uuid from 'uuid/v1';
 
 const debug = debugFactory('smart-request-balancer');
 
@@ -44,7 +44,7 @@ export type UserConfig = {
   overall?: Rule,
   retryTime?: number,
   ignoreOverallOverheat?: boolean
-}
+};
 
 type QueueConfig = {
   rules: {

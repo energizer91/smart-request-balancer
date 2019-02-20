@@ -9,7 +9,14 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "mocha --reporter spec test/**/*"
+    "lint": "tslint -p tsconfig.json",
+    "test": "mocha --reporter spec test/**/*",
+    "cover": "istanbul cover node_modules/mocha/bin/_mocha test/**/* - --R spec",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -33,9 +40,12 @@
     "@types/debug": "^4.1.1",
     "@types/uuid": "^3.4.4",
     "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
+    "istanbul": "^0.4.5",
     "mocha": "^6.0.0",
     "sinon": "^7.2.4",
     "sinon-chai": "^3.3.0",
+    "tslint": "^5.12.1",
     "typescript": "^3.3.3"
   },
   "dependencies": {
