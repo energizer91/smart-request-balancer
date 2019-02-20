@@ -14,12 +14,23 @@ yarn add smart-request-balancer
 ```
 ## Usage
 
+### CommonJS
+
+```js
+const Queue = require('smart-request-balancer');
+```
+
+### Typescript
+
+```js
+import Queue from 'smart-request-balancer';
+```
+
 Imagine you have some telegram bot and you need to follow telegram rules of sending messages.
 You have [this page](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) on Telegram bot API
 which says that your bot cannot send more than 1 message per second to person and not more 20 messages per minute
 to group/chat/channel. You can easily configure it in smart request balancer:
 ```js
-const Queue = require('smart-request-balancer');
 
 const queue = new Queue({
   rules: {
@@ -55,9 +66,9 @@ queue.request((retry) => axios(config)
 ```
 
 Here you see that we are calling `queue.request()` with 3 parameters:
-- Request handler: promise which will be executed
-- Unique key of request: For example, user_id of chat
-- Rule name: Rule which we configured at queue creation
+- `fn` Request handler: promise which will be executed
+- `key` Unique key of request: For example, user_id of chat
+- `rule` Rule name: Rule which we configured at queue creation
 
 Also you can see that we are handling retry in request handler. That's our plan B in
 order that Telegram API somehow gets requests overflow. Just call this retry function with some `Number`
@@ -104,6 +115,8 @@ queue.request((retry) => axios(config)
     throw error; // throw error further
   }), key, rule);
 ```
+
+You can use any available promise-based library to make requests. Promise resolve will be transferred further.
 
 ### Getting responses
 `queue.request(...)` will return promise which will resolve only when our queue will execute our request and get results.
