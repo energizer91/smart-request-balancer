@@ -4,9 +4,9 @@ import uuid from 'uuid/v1';
 const debug = debugFactory('smart-request-balancer');
 
 type Rule = {
-  rate: number,
-  limit: number,
-  priority: number
+  rate: number;
+  limit: number;
+  priority: number;
 };
 
 type RetryFunction = (delay: number) => void;
@@ -14,49 +14,49 @@ type QueueRequest = (RetryFunction: RetryFunction) => Promise<any>;
 type Callback = (error: Error | null, data?: any) => void;
 
 type QueueItemData = {
-  id: string,
-  request: QueueRequest,
-  callback: Callback
+  id: string;
+  request: QueueRequest;
+  callback: Callback;
 };
 
 type QueueItem = {
-  id: string,
-  cooldown: number,
-  key: string,
-  data: QueueItemData[],
-  rule: Rule,
-  ruleName: string
+  id: string;
+  cooldown: number;
+  key: string;
+  data: QueueItemData[];
+  rule: Rule;
+  ruleName: string;
 };
 
 type ShiftItemStructure = {
-  queue: QueueItem,
-  item: QueueItemData
+  queue: QueueItem;
+  item: QueueItemData;
 };
 
 type UserConfig = {
   rules?: {
-    [key: string]: Rule
-  },
+    [key: string]: Rule;
+  };
   default?: {
-    rule: string,
-    key: string
-  },
-  overall?: Rule,
-  retryTime?: number,
-  ignoreOverallOverheat?: boolean
+    rule: string;
+    key: string;
+  };
+  overall?: Rule;
+  retryTime?: number;
+  ignoreOverallOverheat?: boolean;
 };
 
 type QueueConfig = {
   rules: {
-    [key: string]: Rule
-  },
+    [key: string]: Rule;
+  };
   default: {
-    rule: string,
-    key: string
-  },
-  overall: Rule,
-  retryTime: number,
-  ignoreOverallOverheat: boolean
+    rule: string;
+    key: string;
+  };
+  overall: Rule;
+  retryTime: number;
+  ignoreOverallOverheat: boolean;
 };
 
 type QueueMap = Map<string, QueueItem>;
@@ -92,24 +92,33 @@ class SmartQueue {
   constructor(params?: UserConfig) {
     this.params = Object.assign({}, defaultParams, params) as QueueConfig;
 
-    this.heatPart = this.params.overall.limit * 1000 / this.params.overall.rate;
+    this.heatPart = (this.params.overall.limit * 1000) / this.params.overall.rate;
   }
 
-  public request(fn: QueueRequest, key: string = this.params.default.key, rule: string = this.params.default.rule): Promise<any> {
+  public request(
+    fn: QueueRequest,
+    key: string = this.params.default.key,
+    rule: string = this.params.default.rule
+  ): Promise<any> {
     debug('Adding queue request', key, rule);
 
     return new Promise((resolve, reject) => {
-      this.add(fn, (error, data) => {
-        if (error) {
-          debug('Request resolving error', key, rule, error);
+      this.add(
+        fn,
+        (error, data) => {
+          if (error) {
+            debug('Request resolving error', key, rule, error);
 
-          return reject(error);
-        }
+            return reject(error);
+          }
 
-        debug('Resolving queue request', key, rule);
+          debug('Resolving queue request', key, rule);
 
-        return resolve(data);
-      }, key, rule);
+          return resolve(data);
+        },
+        key,
+        rule
+      );
     });
   }
 
@@ -120,14 +129,19 @@ class SmartQueue {
   public get totalLength(): number {
     let length = 0;
 
-    this.queue.forEach((queue) => {
+    this.queue.forEach(queue => {
       length += queue.data.length;
     });
 
     return length;
   }
 
-  private add(request: QueueRequest, callback: Callback, key: string = this.params.default.key, rule: string = this.params.default.rule): void {
+  private add(
+    request: QueueRequest,
+    callback: Callback,
+    key: string = this.params.default.key,
+    rule: string = this.params.default.rule
+  ): void {
     const queue = this.createQueue(key, request, callback, rule);
 
     debug('Adding request to the queue', queue.id);
@@ -310,7 +324,7 @@ class SmartQueue {
 
   private setCooldown(queue: QueueItem) {
     const ruleData = this.params.rules[queue.ruleName];
-    const cooldown = ruleData.limit * 1000 / ruleData.rate;
+    const cooldown = (ruleData.limit * 1000) / ruleData.rate;
 
     queue.cooldown = cooldown;
 
@@ -328,11 +342,11 @@ class SmartQueue {
   }
 
   private delay(time = 0): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, time));
+    return new Promise(resolve => setTimeout(resolve, time));
   }
 
   private isCool(queue: QueueItem): boolean {
-    const cooldown = queue.rule.limit * 1000 / queue.rule.rate;
+    const cooldown = (queue.rule.limit * 1000) / queue.rule.rate;
 
     return queue.cooldown < cooldown;
   }

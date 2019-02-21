@@ -1,8 +1,11 @@
 # Smart request balancer 
-Smart request queue with fine tuning of rates and limits of queue execution
-## Build status
+![npm](https://img.shields.io/npm/v/smart-request-balancer.svg)
 [![Build Status](https://travis-ci.org/energizer91/smart-request-balancer.svg?branch=master)](https://travis-ci.org/energizer91/smart-request-balancer)
 [![Coverage Status](https://coveralls.io/repos/github/energizer91/smart-request-balancer/badge.svg?branch=master)](https://coveralls.io/github/energizer91/smart-request-balancer?branch=master)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+
+Smart request queue with fine tuning of rates and limits of queue execution
+
 ## Installation
 ### NPM
 ```bash

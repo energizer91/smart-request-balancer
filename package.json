@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "test": "mocha --reporter spec test/**/*",
     "cover": "nyc mocha test/**/*",
@@ -16,7 +17,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
-    "version": "git add -A src",
+    "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -44,9 +45,11 @@
     "coveralls": "^3.0.2",
     "mocha": "^6.0.0",
     "nyc": "^13.3.0",
+    "prettier": "^1.16.4",
     "sinon": "^7.2.4",
     "sinon-chai": "^3.3.0",
     "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.3.3"
   },
   "dependencies": {
