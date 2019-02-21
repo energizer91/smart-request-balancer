@@ -316,8 +316,7 @@ class SmartQueue {
       return null;
     }
 
-    // @ts-ignore
-    debug('Finding best queue', selectedQueue && selectedQueue.id);
+    debug('Finding best queue', selectedQueue && (selectedQueue as QueueItem).id);
 
     return selectedQueue;
   }
