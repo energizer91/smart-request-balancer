@@ -39,15 +39,20 @@ describe('Smart queue', () => {
 
     expect(queue).to.be.an('object');
   });
-  it('should make requests', (done) => {
+  it('should have all required methods and fields', () => {
+    const queue = new SmartQueue(params);
+
+    expect(queue).to.have.property('request');
+    expect(queue).to.have.property('totalLength');
+    expect(queue).to.have.property('isOverheated');
+  })
+  it('should make requests', async () => {
     const queue = new SmartQueue(params);
     const response = {a: 1};
 
-    queue.request(() => response)
-      .then(result => {
-        expect(result).to.eq(response);
-        done();
-      });
+    const result = await queue.request(() => response);
+
+    expect(result).to.eq(response);
   });
 
   it('should measure length', (done) => {
@@ -155,5 +160,22 @@ describe('Smart queue', () => {
     expect(callback).to.have.been.calledOnce;
     expect(callback).to.have.been.calledWith(1);
     expect(queue.params.rules).to.have.property('lol');
-  })
+  });
+
+  it('should prioritize calls', async () => {
+    const queue = new SmartQueue(params);
+    const callback = sinon.spy();
+
+    await Promise.all([
+      queue.request(() => 1, 1, 'group').then(callback),
+      queue.request(() => 2, 2, 'group').then(callback),
+      queue.request(() => 3, 3, 'individual').then(callback)
+    ]);
+
+    expect(queue.totalLength).to.eq(0);
+    expect(callback).to.have.been.calledThrice;
+    expect(callback).to.have.been.calledWith(1);
+    expect(callback).to.have.been.calledWith(3);
+    expect(callback).to.have.been.calledWith(2);
+  });
 });
