@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "test": "mocha --reporter spec test/**/*",
     "cover": "nyc mocha test/**/*",

@@ -152,15 +152,15 @@ class SmartQueue {
   }
 
   private createQueue(queueName: string, request: QueueRequest, callback: Callback, rule: string): QueueItem {
-    const id = uuid();
-
-    debug('Creating queue', id, queueName, rule);
-
     if (!this.queue.has(queueName)) {
+      const queueId = uuid();
+
+      debug('Creating queue', queueId, queueName, rule);
+
       this.queue.set(queueName, {
         cooldown: 0,
         data: [],
-        id,
+        id: queueId,
         key: queueName,
         rule: this.getRule(rule),
         ruleName: rule
@@ -168,10 +168,13 @@ class SmartQueue {
     }
 
     const queue = this.queue.get(queueName) as QueueItem;
+    const queueItemId = uuid();
+
+    debug('Adding item to existing queue', queue.id, queueItemId);
 
     queue.data.push({
       callback,
-      id,
+      id: queueItemId,
       request
     });
 
@@ -216,12 +219,16 @@ class SmartQueue {
       return;
     }
 
-    this.heat();
-
     debug('Executing queue item', nextItem.item.id);
 
     try {
+      const startTime = Date.now();
       const data = await nextItem.item.request(retryFn);
+      const endTime = Date.now();
+      const executionTime = endTime - startTime;
+
+      this.heat(executionTime);
+      this.setCooldown(nextItem.queue, executionTime);
 
       if (retryState) {
         this.addRetry(nextItem, retryTimer);
@@ -246,16 +253,20 @@ class SmartQueue {
       return null;
     }
 
-    this.setCooldown(currentQueue);
-
     return {
       item: currentQueue.data.shift() as QueueItemData,
       queue: currentQueue
     };
   }
 
-  private heat() {
+  private heat(part: number = 0) {
     if (this.params.ignoreOverallOverheat) {
+      return;
+    }
+
+    if (part >= this.heatPart) {
+      debug('Overall queue is already cold');
+
       return;
     }
 
@@ -266,7 +277,7 @@ class SmartQueue {
     setTimeout(() => {
       this.overheat = Math.max(this.overheat - this.heatPart, 0);
 
-      debug('Cooling down overall heat', this.overheat);
+      debug('Cooling down overall queue', this.overheat);
     }, this.heatPart);
   }
 
@@ -321,9 +332,19 @@ class SmartQueue {
     return selectedQueue;
   }
 
-  private setCooldown(queue: QueueItem) {
+  private setCooldown(queue: QueueItem, part: number = 0) {
     const ruleData = this.params.rules[queue.ruleName];
     const cooldown = (ruleData.limit * 1000) / ruleData.rate;
+
+    if (part >= cooldown) {
+      debug('Queue is already cold', queue.id);
+
+      if (!queue.data.length) {
+        this.remove(queue.key);
+      }
+
+      return;
+    }
 
     queue.cooldown = cooldown;
 
@@ -351,6 +372,8 @@ class SmartQueue {
   }
 
   private remove(key: string) {
+    debug('Deleting queue', key);
+
     this.queue.delete(key);
   }
 }

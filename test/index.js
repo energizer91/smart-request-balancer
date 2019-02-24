@@ -160,7 +160,7 @@ describe('Smart queue', () => {
 
   it('should hit overall heat limit', async () => {
     const overallRule = {
-      rate: 1,
+      rate: 10,
       limit: 1
     };
     const queue = new SmartQueue(
@@ -169,7 +169,7 @@ describe('Smart queue', () => {
         overall: overallRule
       })
     );
-    const rateLimit = Math.round((overallRule.rate / overallRule.limit) * 1000);
+    const rateLimit = Math.round((overallRule.limit / overallRule.rate) * 1000);
     const request = sinon.stub().returns();
     const callback = sinon.spy();
 
@@ -214,5 +214,19 @@ describe('Smart queue', () => {
     expect(callback).to.have.been.calledWith(1);
     expect(callback).to.have.been.calledWith(3);
     expect(callback).to.have.been.calledWith(2);
+  });
+
+  it('should not wait more than rate limit time', async () => {
+    const queue = new SmartQueue(params);
+    const request = () => new Promise(resolve => setTimeout(resolve, 50));
+    let firstEnd = 0;
+    let secondEnd = 0;
+
+    await Promise.all([
+      queue.request(request).then(() => (firstEnd = Date.now())),
+      queue.request(request).then(() => (secondEnd = Date.now()))
+    ]);
+
+    expect(secondEnd - firstEnd).is.lte(60);
   });
 });
