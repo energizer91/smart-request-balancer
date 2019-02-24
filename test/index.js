@@ -217,7 +217,7 @@ describe('Smart queue', () => {
   });
 
   it('should not wait more than rate limit time', async () => {
-    const queue = new SmartQueue(params);
+    const queue = new SmartQueue(Object.assign({}, params, { ignoreOverallOverheat: false }));
     const request = () => new Promise(resolve => setTimeout(resolve, 50));
     let firstEnd = 0;
     let secondEnd = 0;
