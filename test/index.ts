@@ -1,10 +1,11 @@
-const SmartQueue = require('../dist/index.js');
-const chai = require('chai');
-const sinon = require('sinon');
-const sinonChai = require('sinon-chai');
+/* tslint:disable:no-unused-expression */
+import { expect, use } from 'chai';
+import { describe, it } from 'mocha';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+import SmartQueue from '../src';
 
-const expect = chai.expect;
-chai.use(sinonChai);
+use(sinonChai);
 
 const params = {
   rules: {
@@ -59,7 +60,7 @@ describe('Smart queue', () => {
 
   it('should cool down queue after request', async () => {
     const queue = new SmartQueue(params);
-    const request = sinon.stub().returns();
+    const request = sinon.stub();
 
     await queue.request(request);
 
@@ -69,7 +70,7 @@ describe('Smart queue', () => {
 
   it('should measure length', async () => {
     const queue = new SmartQueue(params);
-    const request = sinon.stub().returns();
+    const request = sinon.stub();
 
     queue.request(request);
     queue.request(request);
@@ -80,7 +81,7 @@ describe('Smart queue', () => {
 
   it('should have length 0 after request', async () => {
     const queue = new SmartQueue(params);
-    const request = sinon.stub().returns();
+    const request = sinon.stub();
 
     await queue.request(request);
     await queue.request(request);
@@ -113,7 +114,7 @@ describe('Smart queue', () => {
 
   it('should not execute calls faster than rate limit', async () => {
     const queue = new SmartQueue(params);
-    const request = sinon.stub().returns();
+    const request = sinon.stub();
     const callback = sinon.spy();
     const rateLimit = Math.round((params.rules.common.limit / params.rules.common.rate) * 1000);
 
@@ -131,7 +132,7 @@ describe('Smart queue', () => {
     let retryFlag = false;
 
     await queue
-      .request(retry => {
+      .request(async retry => {
         if (!retryFlag) {
           retryFlag = true;
           retry(0.1);
@@ -170,7 +171,7 @@ describe('Smart queue', () => {
       })
     );
     const rateLimit = Math.round((overallRule.limit / overallRule.rate) * 1000);
-    const request = sinon.stub().returns();
+    const request = sinon.stub();
     const callback = sinon.spy();
 
     await queue.request(request).then(callback);
@@ -183,12 +184,14 @@ describe('Smart queue', () => {
 
   it('should create new rule if nothing found', async () => {
     const queue = new SmartQueue(params);
+    const request = sinon.stub().returns(1);
     const callback = sinon.spy();
 
-    await queue.request(() => 1, 1, 'lol').then(callback);
+    await queue.request(request, '1', 'lol').then(callback);
 
     expect(callback).to.have.been.calledOnce;
     expect(callback).to.have.been.calledWith(1);
+    // @ts-ignore
     expect(queue.params.rules).to.have.property('lol');
   });
 
@@ -205,9 +208,9 @@ describe('Smart queue', () => {
     const callback = sinon.spy();
 
     await Promise.all([
-      queue.request(request, 1, 'group').then(callback),
-      queue.request(request, 2, 'group').then(callback),
-      queue.request(request, 3, 'individual').then(callback)
+      queue.request(request, '1', 'group').then(callback),
+      queue.request(request, '2', 'group').then(callback),
+      queue.request(request, '3', 'individual').then(callback)
     ]);
 
     expect(callback).to.have.been.calledThrice;
