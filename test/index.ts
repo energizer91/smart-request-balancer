@@ -148,6 +148,28 @@ describe('Smart queue', () => {
     expect(callback).to.have.been.calledWith(1);
   });
 
+  it('should make retry with default config param', async () => {
+    const queue = new SmartQueue(Object.assign({}, params, { retryTime: 0.1 }));
+    const callback = sinon.spy();
+    let retryFlag = false;
+
+    await queue
+      .request(async retry => {
+        if (!retryFlag) {
+          retryFlag = true;
+          retry();
+
+          return;
+        }
+
+        return 1;
+      })
+      .then(callback);
+
+    expect(callback).to.have.been.calledOnce;
+    expect(callback).to.have.been.calledWith(1);
+  });
+
   it('should return error', async () => {
     const queue = new SmartQueue(params);
     const request = sinon.stub().throws();

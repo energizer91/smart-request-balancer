@@ -9,7 +9,7 @@ type Rule = {
   priority: number;
 };
 
-type RetryFunction = (delay: number) => void;
+type RetryFunction = (delay?: number) => void;
 type QueueRequest = (RetryFunction: RetryFunction) => Promise<any>;
 type Callback = (error: Error | null, data?: any) => void;
 
@@ -136,12 +136,7 @@ class SmartQueue {
     return length;
   }
 
-  private add(
-    request: QueueRequest,
-    callback: Callback,
-    key: string = this.params.default.key,
-    rule: string = this.params.default.rule
-  ): void {
+  private add(request: QueueRequest, callback: Callback, key: string, rule: string): void {
     const queue = this.createQueue(key, request, callback, rule);
 
     debug('Adding request to the queue', queue.id);
@@ -221,14 +216,10 @@ class SmartQueue {
 
     debug('Executing queue item', nextItem.item.id);
 
-    try {
-      const startTime = Date.now();
-      const data = await nextItem.item.request(retryFn);
-      const endTime = Date.now();
-      const executionTime = endTime - startTime;
+    const startTime = Date.now();
 
-      this.heat(executionTime);
-      this.setCooldown(nextItem.queue, executionTime);
+    try {
+      const data = await nextItem.item.request(retryFn);
 
       if (retryState) {
         this.addRetry(nextItem, retryTimer);
@@ -242,6 +233,12 @@ class SmartQueue {
 
       nextItem.item.callback(error);
     }
+
+    const endTime = Date.now();
+    const executionTime = endTime - startTime;
+
+    this.heat(executionTime);
+    this.setCooldown(nextItem.queue, executionTime);
 
     return this.execute();
   }
@@ -259,7 +256,7 @@ class SmartQueue {
     };
   }
 
-  private heat(part: number = 0) {
+  private heat(part: number) {
     if (this.params.ignoreOverallOverheat) {
       return;
     }
@@ -332,7 +329,7 @@ class SmartQueue {
     return selectedQueue;
   }
 
-  private setCooldown(queue: QueueItem, part: number = 0) {
+  private setCooldown(queue: QueueItem, part: number) {
     const ruleData = this.params.rules[queue.ruleName];
     const cooldown = (ruleData.limit * 1000) / ruleData.rate;
 
@@ -361,7 +358,7 @@ class SmartQueue {
     }, cooldown);
   }
 
-  private delay(time = 0): Promise<void> {
+  private delay(time: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, time));
   }
 
