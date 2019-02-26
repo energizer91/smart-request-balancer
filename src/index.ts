@@ -33,19 +33,6 @@ type ShiftItemStructure = {
   item: QueueItemData;
 };
 
-type UserConfig = {
-  rules?: {
-    [key: string]: Rule;
-  };
-  default?: {
-    rule: string;
-    key: string;
-  };
-  overall?: Rule;
-  retryTime?: number;
-  ignoreOverallOverheat?: boolean;
-};
-
 type QueueConfig = {
   rules: {
     [key: string]: Rule;
@@ -61,7 +48,7 @@ type QueueConfig = {
 
 type QueueMap = Map<string, QueueItem>;
 
-const defaultParams: UserConfig = {
+const defaultParams = {
   default: {
     rule: 'common',
     key: 'common'
@@ -89,8 +76,8 @@ class SmartQueue {
   private pending = false;
   private readonly heatPart: number;
 
-  constructor(params?: UserConfig) {
-    this.params = Object.assign({}, defaultParams, params) as QueueConfig;
+  constructor(params?: Partial<QueueConfig>) {
+    this.params = Object.assign({}, defaultParams, params);
 
     this.heatPart = (this.params.overall.limit * 1000) / this.params.overall.rate;
   }
