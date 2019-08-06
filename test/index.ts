@@ -262,8 +262,8 @@ describe('Smart queue', () => {
           rate: 5,
           limit: 1,
           priority: 1
-        },
-      },
+        }
+      }
     });
     const request = () => new Promise(resolve => setTimeout(resolve, 300));
     let firstEnd = 0;
