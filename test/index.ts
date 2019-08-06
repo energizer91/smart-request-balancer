@@ -254,4 +254,26 @@ describe('Smart queue', () => {
 
     expect(secondEnd - firstEnd).is.lte(60);
   });
+
+  it('should execute tasks regardless of execution time', async () => {
+    const queue = new SmartQueue({
+      rules: {
+        common: {
+          rate: 5,
+          limit: 1,
+          priority: 1
+        },
+      },
+    });
+    const request = () => new Promise(resolve => setTimeout(resolve, 300));
+    let firstEnd = 0;
+    let secondEnd = 0;
+
+    await Promise.all([
+      queue.request(request).then(() => (firstEnd = Date.now())),
+      queue.request(request).then(() => (secondEnd = Date.now()))
+    ]);
+
+    expect(Math.abs(secondEnd - firstEnd - 200)).is.lte(5);
+  });
 });
