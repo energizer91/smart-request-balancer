@@ -212,7 +212,7 @@ class SmartQueue {
       if (retryState) {
         this.addRetry(nextItem, retryTimer);
       } else {
-        debug('Queue item executed succsetCooldownessfully', nextItem.item.id);
+        debug('Queue item executed successfully', nextItem.item.id);
 
         nextItem.item.callback(null, data);
       }
