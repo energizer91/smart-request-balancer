@@ -181,7 +181,7 @@ class SmartQueue {
     this.add(item.item.request, item.item.callback, item.queue.key, item.queue.ruleName);
   }
 
-  private async execute(queue?: QueueItem): Promise<void> {
+  private async execute(queue?: QueueItem) {
     if (queue) {
       debug('Executing queue', queue.id);
     }
@@ -201,13 +201,14 @@ class SmartQueue {
       return;
     }
 
+    this.heat();
+
     debug('Executing queue item', nextItem.item.id);
 
-    const startTime = Date.now();
-
     try {
-      const data = await nextItem.item.request(retryFn);
-
+      const requestPromise = nextItem.item.request(retryFn);
+      this.execute();
+      const data = await requestPromise;
       if (retryState) {
         this.addRetry(nextItem, retryTimer);
       } else {
@@ -220,14 +221,6 @@ class SmartQueue {
 
       nextItem.item.callback(error);
     }
-
-    const endTime = Date.now();
-    const executionTime = endTime - startTime;
-
-    this.heat(executionTime);
-    this.setCooldown(nextItem.queue, executionTime);
-
-    return this.execute();
   }
 
   private async shift(queue?: QueueItem): Promise<ShiftItemStructure | null> {
@@ -237,20 +230,16 @@ class SmartQueue {
       return null;
     }
 
+    this.setCooldown(currentQueue);
+
     return {
       item: currentQueue.data.shift() as QueueItemData,
       queue: currentQueue
     };
   }
 
-  private heat(part: number) {
+  private heat() {
     if (this.params.ignoreOverallOverheat) {
-      return;
-    }
-
-    if (part >= this.heatPart) {
-      debug('Overall queue is already cold');
-
       return;
     }
 
@@ -316,19 +305,9 @@ class SmartQueue {
     return selectedQueue;
   }
 
-  private setCooldown(queue: QueueItem, part: number) {
+  private setCooldown(queue: QueueItem) {
     const ruleData = this.params.rules[queue.ruleName];
     const cooldown = (ruleData.limit * 1000) / ruleData.rate;
-
-    if (part >= cooldown) {
-      debug('Queue is already cold', queue.id);
-
-      if (!queue.data.length) {
-        this.remove(queue.key);
-      }
-
-      return;
-    }
 
     queue.cooldown = cooldown;
 
