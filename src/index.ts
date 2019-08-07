@@ -3,8 +3,6 @@ import uuid from 'uuid/v1';
 
 const debug = debugFactory('smart-request-balancer');
 
-// debugFactory.enable('smart-request-balancer');
-
 type Rule = {
   rate: number;
   limit: number;
