@@ -294,12 +294,19 @@ class SmartQueue {
       return this.findMostImportant();
     }
 
-    if (!selectedQueue && this.totalLength === 0) {
-      debug('No queues available. Stopping queue');
+    if (!selectedQueue) {
+      if (this.totalLength === 0) {
+        debug('No queues available. Stopping queue');
 
-      this.pending = false;
+        this.pending = false;
 
-      return null;
+        return null;
+      } else {
+        debug('No queues available but there are pending requests');
+        await this.delay(0);
+
+        return this.findMostImportant();
+      }
     }
 
     debug('Finding best queue', selectedQueue && (selectedQueue as QueueItem).id);
