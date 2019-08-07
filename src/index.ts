@@ -72,7 +72,7 @@ const defaultParams = {
 class SmartQueue {
   private params: QueueConfig;
   private queue: QueueMap = new Map();
-  private overheat = 0;
+  private overheat = Date.now();
   private pending = false;
   private readonly heatPart: number;
 
@@ -110,7 +110,7 @@ class SmartQueue {
   }
 
   public get isOverheated(): boolean {
-    return this.overheat > 0;
+    return this.overheat > Date.now();
   }
 
   public get totalLength(): number {
@@ -201,12 +201,11 @@ class SmartQueue {
       return;
     }
 
-    this.heat();
-
     debug('Executing queue item', nextItem.item.id);
 
     try {
       const requestPromise = nextItem.item.request(retryFn);
+      this.heat();
       this.execute();
       const data = await requestPromise;
       if (retryState) {
@@ -243,14 +242,16 @@ class SmartQueue {
       return;
     }
 
-    this.overheat += this.heatPart;
+    this.overheat = Date.now() + this.heatPart;
+    const lastOverheat = this.overheat;
 
-    debug('Heating overall queue', this.overheat);
+    debug('Heating overall queue', this.heatPart);
 
     setTimeout(() => {
-      this.overheat = Math.max(this.overheat - this.heatPart, 0);
+      const leftOverHeat = Math.max(this.overheat - lastOverheat, 0);
+      this.overheat = Date.now() + leftOverHeat;
 
-      debug('Cooling down overall queue', this.overheat);
+      debug('Cooling down overall queue', leftOverHeat);
     }, this.heatPart);
   }
 
@@ -291,7 +292,7 @@ class SmartQueue {
     if (this.isOverheated && !this.params.ignoreOverallOverheat) {
       debug('Everything is overheated');
 
-      await this.delay(this.overheat);
+      await this.delay(this.overheat - now);
 
       return this.findMostImportant();
     }
