@@ -279,7 +279,7 @@ class SmartQueue {
     });
 
     const defactoMinimalCooldown = minimalCooldown - now;
-    debug('regev', defactoMinimalCooldown, minimalCooldown, now, this.queue);
+
     if (!selectedQueue && defactoMinimalCooldown > 0 && minimalCooldown !== Infinity) {
       debug('Waiting for cooldown', defactoMinimalCooldown);
 
