@@ -276,4 +276,50 @@ describe('Smart queue', () => {
 
     expect(Math.abs(secondEnd - firstEnd - 200)).is.lte(5);
   });
+
+  it('should properly schedule requests on multiple queues', async () => {
+    const queue = new SmartQueue({
+      rules: {
+        q1: {
+          rate: 4,
+          limit: 1,
+          priority: 2
+        },
+        q2: {
+          rate: 10,
+          limit: 1,
+          priority: 1
+        }
+      }
+    });
+    let r1Start = 0;
+    let r2Start = 0;
+    let r3Start = 0;
+    let r4Start = 0;
+    const request1 = () => {
+      r1Start = Date.now();
+      return Promise.resolve();
+    };
+    const request2 = () => {
+      r2Start = Date.now();
+      return Promise.resolve();
+    };
+    const request3 = () => {
+      r3Start = Date.now();
+      return Promise.resolve();
+    };
+    const request4 = () => {
+      r4Start = Date.now();
+      return Promise.resolve();
+    };
+    await Promise.all([
+      queue.request(request1, 'q1', 'q1'),
+      queue.request(request2, 'q1', 'q1'),
+      queue.request(request3, 'q2', 'q2'),
+      queue.request(request4, 'q2', 'q2'),
+    ]);
+    expect(Math.abs(r3Start - r1Start)).is.lte(5);
+    expect(Math.abs(r4Start - r1Start - 100)).is.lte(5);
+    expect(Math.abs(r2Start - r1Start - 250)).is.lte(5);
+  });
 });
