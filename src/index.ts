@@ -3,6 +3,8 @@ import uuid from 'uuid/v1';
 
 const debug = debugFactory('smart-request-balancer');
 
+// debugFactory.enable('smart-request-balancer');
+
 type Rule = {
   rate: number;
   limit: number;
@@ -140,7 +142,7 @@ class SmartQueue {
       debug('Creating queue', queueId, queueName, rule);
 
       this.queue.set(queueName, {
-        cooldown: 0,
+        cooldown: Date.now(),
         data: [],
         id: queueId,
         key: queueName,
@@ -276,10 +278,12 @@ class SmartQueue {
       }
     });
 
-    if (minimalCooldown > 0 && minimalCooldown !== Infinity) {
-      debug('Waiting for cooldown', minimalCooldown);
+    const defactoMinimalCooldown = minimalCooldown - Date.now();
 
-      await this.delay(minimalCooldown);
+    if (defactoMinimalCooldown > 0 && minimalCooldown !== Infinity) {
+      debug('Waiting for cooldown', defactoMinimalCooldown);
+
+      await this.delay(defactoMinimalCooldown);
 
       return this.findMostImportant();
     }
@@ -307,21 +311,22 @@ class SmartQueue {
 
   private setCooldown(queue: QueueItem) {
     const ruleData = this.params.rules[queue.ruleName];
-    const cooldown = (ruleData.limit * 1000) / ruleData.rate;
+    const defactoCooldown = (ruleData.limit * 1000) / ruleData.rate;
+    const cooldown = Date.now() + defactoCooldown;
 
     queue.cooldown = cooldown;
 
-    debug('Setting cooldown', queue.id, cooldown);
+    debug('Setting cooldown', queue.id, defactoCooldown);
 
     setTimeout(() => {
-      queue.cooldown = Math.max(queue.cooldown - cooldown, 0);
+      queue.cooldown = Math.max(queue.cooldown - cooldown, Date.now());
 
-      debug('Removing cooldown', queue.id, cooldown);
+      debug('Removing cooldown', queue.id, defactoCooldown);
 
       if (!queue.data.length) {
         this.remove(queue.key);
       }
-    }, cooldown);
+    }, defactoCooldown);
   }
 
   private delay(time: number): Promise<void> {
@@ -329,7 +334,7 @@ class SmartQueue {
   }
 
   private isCool(queue: QueueItem): boolean {
-    const cooldown = (queue.rule.limit * 1000) / queue.rule.rate;
+    const cooldown = Date.now() + (queue.rule.limit * 1000) / queue.rule.rate;
 
     return queue.cooldown < cooldown;
   }
