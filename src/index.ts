@@ -140,7 +140,7 @@ class SmartQueue {
       debug('Creating queue', queueId, queueName, rule);
 
       this.queue.set(queueName, {
-        cooldown: Date.now() - 10,
+        cooldown: Date.now(),
         data: [],
         id: queueId,
         key: queueName,
@@ -317,7 +317,7 @@ class SmartQueue {
     debug('Setting cooldown', queue.id, defactoCooldown);
 
     setTimeout(() => {
-      queue.cooldown = Date.now() + Math.max(queue.cooldown - cooldown, 0) - 10;
+      queue.cooldown = Date.now() + Math.max(queue.cooldown - cooldown, 0);
 
       debug('Removing cooldown', queue.id, defactoCooldown);
 
@@ -332,7 +332,7 @@ class SmartQueue {
   }
 
   private isCool(queue: QueueItem): boolean {
-    return queue.cooldown < Date.now();
+    return queue.cooldown <= Date.now();
   }
 
   private remove(key: string) {
