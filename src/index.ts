@@ -265,8 +265,10 @@ class SmartQueue {
     let selectedQueue: QueueItem | null = null;
     let minimalCooldown = Infinity;
 
+    const now = Date.now();
+
     this.queue.forEach((queue: QueueItem) => {
-      if (queue.rule.priority < maximumPriority && queue.data.length && this.isCool(queue)) {
+      if (queue.rule.priority < maximumPriority && queue.data.length && this.isCool(queue, now)) {
         maximumPriority = queue.rule.priority;
         selectedQueue = queue;
       }
@@ -294,19 +296,12 @@ class SmartQueue {
       return this.findMostImportant();
     }
 
-    if (!selectedQueue) {
-      if (this.totalLength === 0) {
-        debug('No queues available. Stopping queue');
+    if (!selectedQueue && this.totalLength === 0) {
+      debug('No queues available. Stopping queue');
 
-        this.pending = false;
+      this.pending = false;
 
-        return null;
-      } else {
-        debug('No queues available but there are pending requests');
-        await this.delay(0);
-
-        return this.findMostImportant();
-      }
+      return null;
     }
 
     debug('Finding best queue', selectedQueue && (selectedQueue as QueueItem).id);
@@ -338,8 +333,8 @@ class SmartQueue {
     return new Promise(resolve => setTimeout(resolve, time));
   }
 
-  private isCool(queue: QueueItem): boolean {
-    return queue.cooldown <= Date.now();
+  private isCool(queue: QueueItem, comparedTo: number): boolean {
+    return queue.cooldown <= comparedTo;
   }
 
   private remove(key: string) {
