@@ -252,7 +252,7 @@ describe('Smart queue', () => {
       queue.request(request).then(() => (secondEnd = Date.now()))
     ]);
 
-    expect(Math.abs(secondEnd - firstEnd - 66)).is.lte(5);
+    expect(Math.abs(secondEnd - firstEnd - 33)).is.lte(5);
   });
 
   it('should execute tasks regardless of execution time', async () => {
