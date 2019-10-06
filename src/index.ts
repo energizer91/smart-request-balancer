@@ -72,7 +72,7 @@ const defaultParams = {
 class SmartQueue {
   private params: QueueConfig;
   private queue: QueueMap = new Map();
-  private overheat = 0;
+  private overheat = Date.now();
   private pending = false;
   private readonly heatPart: number;
 
@@ -110,7 +110,7 @@ class SmartQueue {
   }
 
   public get isOverheated(): boolean {
-    return this.overheat > 0;
+    return this.overheat > Date.now();
   }
 
   public get totalLength(): number {
@@ -140,7 +140,7 @@ class SmartQueue {
       debug('Creating queue', queueId, queueName, rule);
 
       this.queue.set(queueName, {
-        cooldown: 0,
+        cooldown: Date.now(),
         data: [],
         id: queueId,
         key: queueName,
@@ -201,12 +201,11 @@ class SmartQueue {
       return;
     }
 
-    this.heat();
-
     debug('Executing queue item', nextItem.item.id);
 
     try {
       const requestPromise = nextItem.item.request(retryFn);
+      this.heat();
       this.execute();
       const data = await requestPromise;
       if (retryState) {
@@ -243,14 +242,16 @@ class SmartQueue {
       return;
     }
 
-    this.overheat += this.heatPart;
+    this.overheat = Date.now() + this.heatPart;
+    const lastOverheat = this.overheat;
 
-    debug('Heating overall queue', this.overheat);
+    debug('Heating overall queue', this.heatPart);
 
     setTimeout(() => {
-      this.overheat = Math.max(this.overheat - this.heatPart, 0);
+      const leftOverHeat = Math.max(this.overheat - lastOverheat, 0);
+      this.overheat = Date.now() + leftOverHeat;
 
-      debug('Cooling down overall queue', this.overheat);
+      debug('Cooling down overall queue', leftOverHeat);
     }, this.heatPart);
   }
 
@@ -265,21 +266,25 @@ class SmartQueue {
     let selectedQueue: QueueItem | null = null;
     let minimalCooldown = Infinity;
 
+    const now = Date.now();
+
     this.queue.forEach((queue: QueueItem) => {
-      if (queue.rule.priority < maximumPriority && queue.data.length && this.isCool(queue)) {
+      if (queue.rule.priority < maximumPriority && queue.data.length && this.isCool(queue, now)) {
         maximumPriority = queue.rule.priority;
         selectedQueue = queue;
       }
 
-      if (queue.cooldown < minimalCooldown) {
+      if (queue.cooldown < minimalCooldown && queue.cooldown > now) {
         minimalCooldown = queue.cooldown;
       }
     });
 
-    if (minimalCooldown > 0 && minimalCooldown !== Infinity) {
-      debug('Waiting for cooldown', minimalCooldown);
+    const defactoMinimalCooldown = minimalCooldown - now;
 
-      await this.delay(minimalCooldown);
+    if (!selectedQueue && defactoMinimalCooldown > 0 && minimalCooldown !== Infinity) {
+      debug('Waiting for cooldown', defactoMinimalCooldown);
+
+      await this.delay(defactoMinimalCooldown);
 
       return this.findMostImportant();
     }
@@ -287,7 +292,7 @@ class SmartQueue {
     if (this.isOverheated && !this.params.ignoreOverallOverheat) {
       debug('Everything is overheated');
 
-      await this.delay(this.overheat);
+      await this.delay(this.overheat - now);
 
       return this.findMostImportant();
     }
@@ -307,31 +312,30 @@ class SmartQueue {
 
   private setCooldown(queue: QueueItem) {
     const ruleData = this.params.rules[queue.ruleName];
-    const cooldown = (ruleData.limit * 1000) / ruleData.rate;
+    const defactoCooldown = (ruleData.limit * 1000) / ruleData.rate;
+    const cooldown = Date.now() + defactoCooldown;
 
     queue.cooldown = cooldown;
 
-    debug('Setting cooldown', queue.id, cooldown);
+    debug('Setting cooldown', queue.id, defactoCooldown);
 
     setTimeout(() => {
-      queue.cooldown = Math.max(queue.cooldown - cooldown, 0);
+      queue.cooldown = Date.now() + Math.max(queue.cooldown - cooldown, 0);
 
-      debug('Removing cooldown', queue.id, cooldown);
+      debug('Removing cooldown', queue.id, defactoCooldown);
 
       if (!queue.data.length) {
         this.remove(queue.key);
       }
-    }, cooldown);
+    }, defactoCooldown);
   }
 
   private delay(time: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, time));
   }
 
-  private isCool(queue: QueueItem): boolean {
-    const cooldown = (queue.rule.limit * 1000) / queue.rule.rate;
-
-    return queue.cooldown < cooldown;
+  private isCool(queue: QueueItem, comparedTo: number): boolean {
+    return queue.cooldown <= comparedTo;
   }
 
   private remove(key: string) {
