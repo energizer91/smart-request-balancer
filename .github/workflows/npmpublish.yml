@@ -5,40 +5,7 @@ on:
     types: [created]
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-
-      - name: Install package
-        run: npm install
-
-      - name: Test
-        run: |
-          npm run test
-          npm run build
-          npm run cover
-          nyc report --reporter=text-lcov
-
-      - name: Coveralls Parallel
-      - uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel: true
-          path-to-lcov: ./coverage/lcov.info # optional (default value)
-
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
-
   publish-npm:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
