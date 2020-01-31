@@ -109,6 +109,12 @@ class SmartQueue {
     });
   }
 
+  public clear() {
+    debug('Clearing all queues');
+
+    this.queue.clear();
+  }
+
   public get isOverheated(): boolean {
     return this.overheat > Date.now();
   }

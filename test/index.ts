@@ -7,7 +7,7 @@ import SmartQueue from '../src';
 
 use(sinonChai);
 
-const ERROR_RATE = 5;
+const ERROR_RATE = 10;
 const params = {
   rules: {
     common: {
@@ -322,5 +322,26 @@ describe('Smart queue', () => {
     expect(Math.abs(r3Start - r1Start)).is.lte(ERROR_RATE);
     expect(Math.abs(r4Start - r1Start - 100)).is.lte(ERROR_RATE);
     expect(Math.abs(r2Start - r1Start - 250)).is.lte(ERROR_RATE);
+  });
+
+  it('should clear queues', () => {
+    const queue = new SmartQueue({
+      rules: {
+        q1: {
+          rate: 10,
+          limit: 1,
+          priority: 1
+        }
+      }
+    });
+
+    queue.request(() => Promise.resolve(true), '1', 'q1');
+    queue.request(() => Promise.resolve(true), '2', 'q1');
+
+    expect(queue.totalLength).to.eql(2);
+
+    queue.clear();
+
+    expect(queue.totalLength).to.eql(0);
   });
 });
