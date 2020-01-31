@@ -7,6 +7,7 @@ import SmartQueue from '../src';
 
 use(sinonChai);
 
+const ERROR_RATE = 5;
 const params = {
   rules: {
     common: {
@@ -123,7 +124,7 @@ describe('Smart queue', () => {
     await queue.request(request).then(callback);
     const secondEnd = Date.now();
 
-    expect(secondEnd - firstEnd).is.gte(rateLimit);
+    expect(Math.abs(secondEnd - firstEnd - rateLimit)).is.lte(ERROR_RATE);
   });
 
   it('should make retry', async () => {
@@ -252,7 +253,7 @@ describe('Smart queue', () => {
       queue.request(request).then(() => (secondEnd = Date.now()))
     ]);
 
-    expect(Math.abs(secondEnd - firstEnd - 33)).is.lte(5);
+    expect(Math.abs(secondEnd - firstEnd - 33)).is.lte(ERROR_RATE);
   });
 
   it('should execute tasks regardless of execution time', async () => {
@@ -274,7 +275,7 @@ describe('Smart queue', () => {
       queue.request(request).then(() => (secondEnd = Date.now()))
     ]);
 
-    expect(Math.abs(secondEnd - firstEnd - 200)).is.lte(5);
+    expect(Math.abs(secondEnd - firstEnd - 200)).is.lte(ERROR_RATE);
   });
 
   it('should properly schedule requests on multiple queues', async () => {
@@ -318,8 +319,8 @@ describe('Smart queue', () => {
       queue.request(request3, 'q2', 'q2'),
       queue.request(request4, 'q2', 'q2')
     ]);
-    expect(Math.abs(r3Start - r1Start)).is.lte(5);
-    expect(Math.abs(r4Start - r1Start - 100)).is.lte(5);
-    expect(Math.abs(r2Start - r1Start - 250)).is.lte(5);
+    expect(Math.abs(r3Start - r1Start)).is.lte(ERROR_RATE);
+    expect(Math.abs(r4Start - r1Start - 100)).is.lte(ERROR_RATE);
+    expect(Math.abs(r2Start - r1Start - 250)).is.lte(ERROR_RATE);
   });
 });
