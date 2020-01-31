@@ -13,7 +13,7 @@
     "lint": "tslint -p tsconfig.json",
     "test": "mocha -r ts-node/register --reporter spec test/**/*",
     "cover": "nyc mocha -r ts-node/register test/**/*",
-    "coverage": "nyc report --reporter=text-lcov",
+    "coverage": "nyc report --reporter=text-lcov > lcov.info",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
