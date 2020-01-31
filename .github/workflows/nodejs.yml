@@ -16,11 +16,13 @@ jobs:
         run: npm install
 
       - name: Test
-        run: |
-          npm run test
-          npm run build
-          npm run cover
-          npm run coverage
+        run: npm run test
+      - name: Build
+        run: npm run build
+      - name: Check coverage
+          run: |
+            npm run cover
+            npm run coverage
       - name: Coveralls Parallel
         uses: coverallsapp/github-action@master
         with:
