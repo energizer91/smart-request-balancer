@@ -1,4 +1,4 @@
-name: Node.js Package
+name: Node.js Package publish
 
 on:
   release:
@@ -13,8 +13,11 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm run build
-      - run: npm publish
+      - name: Install package
+        run: npm install
+      - name: Build package
+        run: npm run build
+      - name: Publish package
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
