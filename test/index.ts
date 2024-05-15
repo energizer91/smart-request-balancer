@@ -69,7 +69,7 @@ describe('Smart queue', () => {
     expect(queue.isOverheated).to.eq(false);
   });
 
-  it('should measure length', async () => {
+  it('should measure length', () => {
     const queue = new SmartQueue(params);
     const request = sinon.stub();
 
@@ -150,7 +150,7 @@ describe('Smart queue', () => {
   });
 
   it('should make retry with default config param', async () => {
-    const queue = new SmartQueue(Object.assign({}, params, { retryTime: 0.1 }));
+    const queue = new SmartQueue({...params, retryTime: 0.1});
     const callback = sinon.spy();
     let retryFlag = false;
 
@@ -185,13 +185,15 @@ describe('Smart queue', () => {
   it('should hit overall heat limit', async () => {
     const overallRule = {
       rate: 10,
-      limit: 1
+      limit: 1,
+      priority: Infinity,
     };
     const queue = new SmartQueue(
-      Object.assign({}, params, {
+      {
+        ...params,
         ignoreOverallOverheat: false,
         overall: overallRule
-      })
+      }
     );
     const rateLimit = Math.round((overallRule.limit / overallRule.rate) * 1000);
     const request = sinon.stub();
