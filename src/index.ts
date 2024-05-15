@@ -10,27 +10,27 @@ type Rule = {
 };
 
 type RetryFunction = (delay?: number) => void;
-type QueueRequest = (RetryFunction: RetryFunction) => Promise<any>;
-type Callback = (error: Error | null, data?: any) => void;
+type QueueRequest<R> = (RetryFunction: RetryFunction) => Promise<R>;
+type Callback<R> = (error: Error | null, data?: R) => void;
 
-type QueueItemData = {
+type QueueItemData<R> = {
   id: string;
-  request: QueueRequest;
-  callback: Callback;
+  request: QueueRequest<R>;
+  callback: Callback<R>;
 };
 
 type QueueItem = {
   id: string;
   cooldown: number;
   key: string;
-  data: QueueItemData[];
+  data: Array<QueueItemData<any>>;
   rule: Rule;
   ruleName: string;
 };
 
 type ShiftItemStructure = {
   queue: QueueItem;
-  item: QueueItemData;
+  item: QueueItemData<any>;
 };
 
 type QueueConfig = {
@@ -82,15 +82,15 @@ class SmartQueue {
     this.heatPart = (this.params.overall.limit * 1000) / this.params.overall.rate;
   }
 
-  public request(
-    fn: QueueRequest,
+  public request<R>(
+    fn: QueueRequest<R>,
     key: string = this.params.default.key,
     rule: string = this.params.default.rule
-  ): Promise<any> {
+  ): Promise<R> {
     debug('Adding queue request', key, rule);
 
     return new Promise((resolve, reject) => {
-      this.add(
+      this.add<R>(
         fn,
         (error, data) => {
           if (error) {
@@ -129,8 +129,8 @@ class SmartQueue {
     return length;
   }
 
-  private add(request: QueueRequest, callback: Callback, key: string, rule: string): void {
-    const queue = this.createQueue(key, request, callback, rule);
+  private add<R>(request: QueueRequest<R>, callback: Callback<R>, key: string, rule: string): void {
+    const queue = this.createQueue<R>(key, request, callback, rule);
 
     debug('Adding request to the queue', queue.id);
 
@@ -139,7 +139,7 @@ class SmartQueue {
     }
   }
 
-  private createQueue(queueName: string, request: QueueRequest, callback: Callback, rule: string): QueueItem {
+  private createQueue<R>(queueName: string, request: QueueRequest<R>, callback: Callback<R>, rule: string): QueueItem {
     if (!this.queue.has(queueName)) {
       const queueId = uuid();
 
@@ -155,7 +155,7 @@ class SmartQueue {
       });
     }
 
-    const queue = this.queue.get(queueName) as QueueItem;
+    const queue = this.queue.get(queueName)!;
     const queueItemId = uuid();
 
     debug('Adding item to existing queue', queue.id, queueItemId);
@@ -238,7 +238,7 @@ class SmartQueue {
     this.setCooldown(currentQueue);
 
     return {
-      item: currentQueue.data.shift() as QueueItemData,
+      item: currentQueue.data.shift()!,
       queue: currentQueue
     };
   }
@@ -274,7 +274,7 @@ class SmartQueue {
 
     const now = Date.now();
 
-    this.queue.forEach((queue: QueueItem) => {
+    this.queue.forEach((queue) => {
       if (queue.rule.priority < maximumPriority && queue.data.length && this.isCool(queue, now)) {
         maximumPriority = queue.rule.priority;
         selectedQueue = queue;
@@ -311,7 +311,7 @@ class SmartQueue {
       return null;
     }
 
-    debug('Finding best queue', selectedQueue && (selectedQueue as QueueItem).id);
+    debug('Finding best queue', selectedQueue && selectedQueue!.id);
 
     return selectedQueue;
   }
