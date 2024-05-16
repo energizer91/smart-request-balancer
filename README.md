@@ -108,7 +108,7 @@ For making requests you should provide callback which will have one argument cal
 ```js
 const key = user_id; // Some telegram user id
 const rule = 'telegramIndividual'; // Our rule for sending messages to chats
-queue.request((retry) => axios(config)
+const response = await queue.request((retry) => axios(config)
   .then(response => response.data)
   .catch(error => {
     if (error.response.status === 429) { // We've got 429 - too many requests
@@ -125,9 +125,11 @@ You can use any available promise-based library to make requests. Promise resolv
 `queue.request(...)` will return promise which will resolve only when our queue will execute our request and get results.
 Let's extend our previous example:
 ```js
-queue.request(requestHandler, key, rule)
-  .then(response => console.log(response)) // our actual response
-  .catch(error => console.error(error))    // our request error (excluding 429)
+try {
+  const response = await queue.request(requestHandler, key, rule); // our actual response
+} catch (e) {
+  console.error(e); // our request error (excluding 429)
+}
 ```
 
 ### Priorities

@@ -150,7 +150,7 @@ describe('Smart queue', () => {
   });
 
   it('should make retry with default config param', async () => {
-    const queue = new SmartQueue({...params, retryTime: 0.1});
+    const queue = new SmartQueue({ ...params, retryTime: 0.1 });
     const callback = sinon.spy();
     let retryFlag = false;
 
@@ -186,15 +186,13 @@ describe('Smart queue', () => {
     const overallRule = {
       rate: 10,
       limit: 1,
-      priority: Infinity,
+      priority: Infinity
     };
-    const queue = new SmartQueue(
-      {
-        ...params,
-        ignoreOverallOverheat: false,
-        overall: overallRule
-      }
-    );
+    const queue = new SmartQueue({
+      ...params,
+      ignoreOverallOverheat: false,
+      overall: overallRule
+    });
     const rateLimit = Math.round((overallRule.limit / overallRule.rate) * 1000);
     const request = sinon.stub();
     const callback = sinon.spy();
