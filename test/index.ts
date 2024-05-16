@@ -46,7 +46,7 @@ describe('Smart queue', () => {
 
   it('should make requests', async () => {
     const queue = new SmartQueue(params);
-    const request = jest.fn(async () => 1);
+    const request = jest.fn().mockResolvedValue(1);
 
     const result = await queue.request(request);
 
