@@ -8,7 +8,7 @@ type Rule = {
 
 type RetryFunction = (delay?: number) => void;
 type QueueRequest<R> = (RetryFunction: RetryFunction) => Promise<R>;
-type Callback<R> = (error: Error | null, data?: R) => void;
+type Callback<R> = (error: Error | null, data: R) => void;
 
 type QueueItemData<R> = {
   id: string;
@@ -199,7 +199,7 @@ class SmartQueue {
         nextItem.item.callback(null, data);
       }
     } catch (error) {
-      nextItem.item.callback(error);
+      nextItem.item.callback(error as Error, null);
     }
   }
 

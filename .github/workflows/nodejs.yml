@@ -23,8 +23,7 @@ jobs:
 
       - name: Test and cover
         run: |
-          npm run cover
-          npm run coverage
+          npm run test
 
       - name: Build
         run: npm run build
@@ -34,7 +33,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel: true
-          path-to-lcov: ./lcov.info # optional (default value)
+          path-to-lcov: ./coverage/lcov.info # optional (default value)
 
       - name: Coveralls Finished
         uses: coverallsapp/github-action@master
